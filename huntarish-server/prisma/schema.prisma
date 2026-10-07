@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  players   Player[]
+  games     Game[]
+  Move      Move[]
+}
+
+model Game {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  rounds    Round[]
+  state     Json?
+  active    Boolean  @default(false)
+}
+
+model Round {
+  id        String   @id @default(cuid())
+  startedAt DateTime @default(now())
+  number    Int
+  result    Json?
+
+  gameId String
+  game   Game   @relation(fields: [gameId], references: [id])
+
+  moves Move[]
+}
+
+model Player {
+  id       String   @id @default(cuid())
+  name     String
+  userId   String?
+  user     User?    @relation(fields: [userId], references: [id])
+  roomId   String
+  room     Room     @relation(fields: [roomId], references: [id])
+  joinedAt DateTime @default(now())
+  moves    Move[]
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  sessions     UserSession[]
+  players      Player[]
+}
+
+model UserSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Move {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  type      String
+  payload   Json
+
+  roomId   String
+  playerId String
+  roundId  String?
+
+  room   Room   @relation(fields: [roomId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
+  round  Round? @relation(fields: [roundId], references: [id])
+}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1100" viewBox="0 0 1600 1100" fill="none">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#e0f0ed"/><stop offset="1" stop-color="#f9f3de"/></linearGradient>
+    <linearGradient id="sea" x2="0" y2="1"><stop stop-color="#75bebc"/><stop offset=".6" stop-color="#add7cd"/><stop offset="1" stop-color="#dce7cf"/></linearGradient>
+    <linearGradient id="sand" x2=".6" y2="1"><stop stop-color="#f4e7c5"/><stop offset="1" stop-color="#e7d2a6"/></linearGradient>
+    <linearGradient id="palm" x2="1" y2="1"><stop stop-color="#195953"/><stop offset="1" stop-color="#54857a"/></linearGradient>
+    <g id="frond"><path d="M0 0C50-76 143-89 244-39C148-61 75-47 0 0Z"/><path d="M18-15L50-45L45-16M55-35L90-63L87-35M100-48L133-69L132-46M147-53L177-65L179-43M190-48L216-53L218-38" stroke="#e0f0ed" stroke-width="3"/></g>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1600v1100H0z"/>
+  <circle cx="310" cy="480" r="115" fill="#f6d689" opacity=".35"/>
+  <path d="M0 644C293 622 453 650 735 635S1290 620 1600 648V1100H0Z" fill="url(#sea)"/>
+  <path d="M0 650C383 629 540 652 823 638S1310 631 1600 647" stroke="#fffaf0" stroke-width="3" opacity=".6"/>
+  <path d="M870 679l187 2m-335 35l238 3m-839-21l189-3m922 30l158 2m-1049 34l227-4" stroke="#fffdf1" stroke-width="3" opacity=".35" stroke-linecap="round"/>
+  <path d="M0 874C266 800 440 930 736 868S1266 805 1600 742V1100H0Z" fill="#fdf8e9" opacity=".65"/>
+  <path d="M0 893C243 821 455 949 757 890S1300 827 1600 765V1100H0Z" fill="url(#sand)"/>
+  <path d="M0 959C208 894 339 962 474 966M982 1012C1191 919 1335 935 1600 865" stroke="#d1b98b" stroke-width="2" opacity=".35"/>
+  <g fill="url(#palm)" opacity=".65" transform="translate(-12 176) rotate(15)">
+    <path d="M0 0C-59 223-20 430-70 670L-98 674C-39 420-82 208-12-3Z"/>
+    <use href="#frond"/><use href="#frond" transform="rotate(40)"/><use href="#frond" transform="rotate(78)"/><use href="#frond" transform="rotate(-39)"/><use href="#frond" transform="scale(-1 1)"/><use href="#frond" transform="rotate(145)"/>
+  </g>
+  <g fill="url(#palm)" opacity=".24" transform="translate(1565 103) rotate(122) scale(1.2)"><use href="#frond"/><use href="#frond" transform="rotate(48)"/><use href="#frond" transform="rotate(-42)"/></g>
+  <g stroke="#c4aa79" stroke-width="2" opacity=".65"><path d="M1380 997q9-22 19-1m-10-1v-12m-6 12l-2-9m12 9l3-9"/><path d="M223 1018q8-17 16 0m-8 0v-12"/></g>
+  <g stroke="#75928a" stroke-width="2" stroke-linecap="round" opacity=".55"><path d="M1040 406q9-8 18 0q8-9 17-2M1091 382q6-6 12 0q5-6 10-1"/></g>
+</svg>

@@ -1,0 +1,23 @@
+{
+  "name": "huntarish-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file=.env index.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "test": "node --test test/game.test.cjs test/stats.test.cjs test/forfeit.test.cjs && node --env-file=.env test/accounts.cjs",
+    "test:rules": "node --test test/game.test.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "prisma": "^6.8.2",
+    "socket.io": "^4.8.1"
+  }
+}
