@@ -316,3 +316,84 @@ select:focus-visible, summary:focus-visible { outline: 3px solid #a26b13; outlin
 .stats-grid div { padding: 18px; background: #eef1e5; border-radius: 14px; }
 .stats-grid dt { font-size: 12px; color: #526956; }
 .stats-grid dd { margin: 6px 0 0; font-size: 30px; color: #245447; }
+.mobile-table-nav, .mobile-card-hint { display: none; }
+a:focus-visible { outline: 3px solid #a26b13; outline-offset: 4px; }
+.member-content, .gameplay > *, .score-player, .room-toolbar > div { min-width: 0; }
+
+@media (max-width: 720px) {
+  .island-app { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); padding-bottom: env(safe-area-inset-bottom); }
+  .site-header { padding: 16px 0; gap: 12px; flex-wrap: wrap; }
+  .header-note { display: none; }
+  .member-layout { padding: 10px 0 28px; }
+  .member-heading { margin-bottom: 20px; gap: 12px; }
+  .member-heading h1 { font-size: 29px; }
+  .account-controls { width: 100%; gap: 8px 16px; }
+  .surface, .game-panel { padding: 16px; border-radius: 16px; }
+  .surface h2 { font-size: 24px; }
+  .section-heading { flex-wrap: wrap; }
+  .section-copy, .stack-help, .arrange-help { font-size: 13px; }
+  input, select, .auth-form input, .room-input-row input, .meld-destination select { font-size: 16px; min-height: 44px; }
+  .button, .button-small, .text-button, .meld-target, .auth-tabs button, .auth-switch button, .game-rules summary { min-height: 44px; }
+  .text-button { display: inline-flex; align-items: center; }
+  .button { white-space: normal; font-size: 13px; padding: 12px 14px; }
+  .button-row { flex-wrap: wrap; gap: 10px; }
+  .auth-panel { padding: 22px 20px 0; }
+  .auth-bottom { margin: 0 -20px; }
+  .auth-form label { font-size: 13px; }
+  .welcome-layout { gap: 20px; padding-top: 0; }
+  .brand-scene { height: 205px; }
+  .brand-card { width: 82px; left: calc(50% - 41px); top: 28px; }
+  .card-center { top: 18px; }
+  .brand-scene h1 { font-size: clamp(54px, 15vw, 72px); letter-spacing: -4px; }
+  .brand-sun { width: 150px; height: 150px; }
+  .intro-badges, .intro-copy { display: none; }
+  .island-intro h2 { font-size: 23px; margin-bottom: 0; }
+  .room-toolbar { gap: 10px; }
+  .room-code { max-width: none; font-size: 11px; }
+  .table-players { margin: 16px 0; }
+  .table-players li { min-width: 0; flex-basis: 100%; }
+  .table-players li > div { min-width: 0; }
+  .gameplay { gap: 16px; }
+  .mobile-table-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mobile-table-nav a { flex: 1; min-height: 44px; display: grid; place-items: center; border-radius: 9px; background: #e9eedf; font-size: 13px; font-weight: 650; }
+  #game-draw, #game-table, #game-hand, #game-actions { scroll-margin-top: 16px; }
+  .score-player { padding: 14px 12px; }
+  .score-player > strong { font-size: 28px; overflow-wrap: anywhere; }
+  .turn-banner { padding: 14px; overflow-wrap: anywhere; }
+  .draw-area { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .draw-deck-area { display: grid; grid-template-columns: 70px minmax(0, 1fr); column-gap: 16px; align-items: center; text-align: left; }
+  .draw-deck-area .deck-button { grid-column: 1; grid-row: 1 / 3; }
+  .draw-deck-area h3 { grid-column: 2; align-self: end; margin-bottom: 4px; }
+  .draw-deck-area p { grid-column: 2; align-self: start; margin-top: 0; font-size: 13px; }
+  .draw-stack-area { padding: 12px; }
+  .interactive-stack, .selectable-hand { flex-wrap: nowrap; overflow-x: auto; padding: 10px 5px 14px; gap: 12px; scroll-padding-inline: 5px; overscroll-behavior-x: contain; }
+  .stack-choice { width: 60px; }
+  .selectable-hand .hand-card { width: 68px; max-width: none; }
+  .mobile-card-hint { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .hand-arrange-toolbar { gap: 8px 14px; margin-bottom: 10px; }
+  .hand-move-buttons { width: 100%; }
+  .hand-move-buttons .button { flex: 1; }
+  .hand-heading { margin-top: 8px; }
+  .meld-table { padding: 14px; }
+  .meld-grid { gap: 12px; }
+  .meld { width: 100%; min-width: 0; padding: 10px; }
+  .meld-cards { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }
+  .owned-card { flex: 0 0 52px; }
+  .meld-target { padding: 10px; font-size: 12px; }
+  .meld-heading { font-size: 12px; }
+  .selection-summary { gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .meld-destination { flex-direction: column; align-items: stretch; gap: 6px; }
+  .game-controls .button-row { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .game-controls .button-row .button { font-size: 14px; }
+  .next-round-row .button { width: 100%; }
+  .round-results { min-width: 0; padding: 14px; }
+  .stats-filter { flex-direction: column; align-items: stretch; }
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .stats-grid div { min-width: 0; padding: 14px 10px; }
+  .stats-grid dd { overflow-wrap: anywhere; }
+}
+
+@media (hover: none) {
+  .button:not(:disabled):hover, .hand-card:hover, .selectable-card:not(:disabled):hover { transform: none; }
+  .selectable-card.card-selected:not(:disabled) { transform: translateY(-5px); }
+}

@@ -95,7 +95,7 @@ function createAuth(app, prisma, origin, onLogout, onRename = async () => {}) {
                 }
                 await issueSession(user, res)
             } catch (error) {
-                    if (error.code === 'P2002') return res.status(409).json({ error: 'That email or display name is already taken. Please choose another.' })
+                if (error.code === 'P2002') return res.status(409).json({ error: 'That email or display name is already taken. Please choose another.' })
                 next(error)
             }
         })

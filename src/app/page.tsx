@@ -6,7 +6,6 @@ import { io, Socket } from 'socket.io-client'
 import { v4 as uuidv4 } from 'uuid'
 import GameTable, { GameState } from '@/app/components/GameTable'
 import HuntarishBrand from '@/app/components/HuntarishBrand'
-import PlayerStats from '@/app/components/PlayerStats'
 
 const apiUrl = process.env.NEXT_PUBLIC_APIURL || 'http://localhost:3001'
 type User = { id: string; name: string }
@@ -195,7 +194,6 @@ export default function Home() {
                                     <button disabled={pending} className="text-button" onClick={logout}>Sign out ↗</button>
                                 </div>
                             </section>
-                            <PlayerStats key={user.id} refreshKey={`${connected}:${roomId}:${gameState?.roundNumber}:${gameState?.status}`} />
                             {!roomId ? (
                                 <div className="lobby-grid">
                                     <section className="surface players-panel">
