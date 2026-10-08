@@ -144,7 +144,7 @@ export default function Home() {
         <div className="island-app">
             <header className="site-header">
                 <div className="wordmark"><span className="wordmark-icon" aria-hidden="true">♠</span> huntarish<span className="wordmark-dot">.</span></div>
-                <span className="header-note">A card game for good company <span aria-hidden="true">↗</span></span>
+                <Link href="/tutorial" className="text-button">Learn to play ↗</Link>
             </header>
             <main className={user ? 'member-layout' : 'welcome-layout'}>
                 {!user && <HuntarishBrand />}

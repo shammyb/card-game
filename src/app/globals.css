@@ -393,6 +393,50 @@ a:focus-visible { outline: 3px solid #a26b13; outline-offset: 4px; }
   .stats-grid dd { overflow-wrap: anywhere; }
 }
 
+.tutorial-layout { display: grid; gap: 24px; }
+.tutorial-guide { display: grid; gap: 16px; }
+.tutorial-guide h1 { font: 500 clamp(26px, 5vw, 38px)/1.2 Georgia, serif; scroll-margin-top: 20px; }
+.tutorial-guide p { line-height: 1.7; }
+.tutorial-guide progress { width: 100%; height: 8px; accent-color: #246858; }
+.tutorial-guide .button-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.tutorial-guide button, .tutorial-guide a { min-height: 44px; }
+.tutorial-finish { display: grid; gap: 16px; border-top: 1px solid #dce4d6; padding-top: 20px; }
+
+.tutorial-in-progress { padding-bottom: 280px; }
+.tutorial-in-progress .tutorial-guide { padding: 16px 20px; gap: 8px; }
+.tutorial-in-progress .tutorial-guide h1 { font-size: 26px; }
+.tutorial-in-progress .turn-banner { display: none; }
+@media (min-width: 900px) {
+  .tutorial-in-progress .gameplay { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; gap: 18px; }
+  .tutorial-in-progress .gameplay > * { grid-column: 1 / -1; }
+  .tutorial-in-progress .gameplay > .draw-area { grid-column: 1; grid-template-columns: 85px minmax(0, 1fr); }
+  .tutorial-in-progress .gameplay > .meld-table { grid-column: 2; }
+  .tutorial-in-progress .score-player { padding: 10px 16px; }
+  .tutorial-in-progress .hand-heading { margin-top: 0; }
+}
+.tutorial-coach { position: fixed; z-index: 100; bottom: max(18px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(720px, calc(100vw - 32px)); display: flex; align-items: flex-start; gap: 14px; padding: 18px; border: 2px solid #d7aa51; border-radius: 22px; background: #fffaf0; color: #173f35; box-shadow: 0 12px 50px #173f3540; }
+.tutorial-coach::before { content: ''; position: absolute; top: -12px; left: 30px; width: 20px; height: 20px; background: #fffaf0; border-top: 2px solid #d7aa51; border-left: 2px solid #d7aa51; transform: rotate(45deg); }
+.coach-avatar { flex: 0 0 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: #265d4c; color: #ffe5a4; font-size: 25px; }
+.coach-copy { min-width: 0; flex: 1; font-size: 13px; line-height: 1.55; max-height: min(32vh, 240px); overflow-y: auto; }
+.coach-copy strong { display: block; margin-bottom: 5px; }
+.coach-copy details { font-size: 12px; margin-top: 6px; }
+.coach-copy summary { cursor: pointer; text-decoration: underline; padding: 5px 0; }
+.coach-error { color: #9b3724; margin-top: 6px; }
+.tutorial-coach button { flex-shrink: 0; min-height: 44px; }
+.tutorial-glow { outline: 3px solid #e5b647 !important; outline-offset: 3px; animation: tutorial-pulse 1.6s ease-in-out infinite; }
+@keyframes tutorial-pulse { 0%, 100% { box-shadow: 0 0 0 5px #e5b64733, 0 0 14px #e5b64744; } 50% { box-shadow: 0 0 0 8px #e5b64755, 0 0 26px #e5b64799; } }
+@media (max-width: 600px) {
+  .tutorial-coach { width: calc(100vw - 20px); gap: 10px; padding: 12px; flex-wrap: wrap; border-radius: 16px; }
+  .coach-avatar { flex-basis: 30px; height: 30px; font-size: 21px; }
+  .coach-copy { flex-basis: calc(100% - 42px); font-size: 13px; }
+  .tutorial-coach button { margin-left: 40px; padding: 8px 12px; }
+  .tutorial-in-progress .interactive-stack { padding: 12px 10px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-glow { animation: none; box-shadow: 0 0 0 5px #e5b64733; }
+  .selectable-card, .hand-card { transition: none; }
+}
+
 @media (hover: none) {
   .button:not(:disabled):hover, .hand-card:hover, .selectable-card:not(:disabled):hover { transform: none; }
   .selectable-card.card-selected:not(:disabled) { transform: translateY(-5px); }
