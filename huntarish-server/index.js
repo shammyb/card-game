@@ -14,7 +14,8 @@ function createGameServer(database = prisma) {
     const origin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000'
     const io = new Server(server, {
         cors: { origin, credentials: true },
-        allowRequest: (request, callback) => callback(null, request.headers.origin === origin),
+        allowRequest: (request, callback) => callback(null, request.headers.origin === origin ||
+            (!request.headers.origin && /^Bearer [a-f0-9]{64}$/.test(request.headers.authorization || ''))),
     })
     app.use(cors({ origin, credentials: true }))
     app.use(express.json({ limit: '8kb' }))

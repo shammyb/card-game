@@ -3,29 +3,9 @@
 import { useRef, useState } from 'react'
 import TutorialCoach, { TutorialGuide } from './TutorialCoach'
 import useCardMotion from './useCardMotion'
-import CardSvg, { Rank, Suit } from './PlayingCards'
-
-type Card = { id: string; rank: Rank; suit: Suit }
-type TableCard = Card & { ownerId: string }
-type RoundScore = { userId: string; name: string; tablePoints: number; handPoints: number; delta: number; total: number }
-type RoundResult = { roundNumber: number; reason: string; scores: RoundScore[] }
-export type GameState = {
-    revision: number
-    roundNumber: number
-    status: 'playing' | 'roundOver' | 'matchOver'
-    phase: 'draw' | 'play' | 'ended'
-    turnUserId: string
-    deckCount: number
-    hand: Card[]
-    stack: Card[]
-    melds: { id: string; kind: 'set' | 'run'; cards: TableCard[] }[]
-    players: { id: string; name: string; cards: number; score: number }[]
-    result: RoundResult | null
-    history: RoundResult[]
-    ready: string[]
-    winnerId: string | null
-    lastAction: string
-}
+import CardSvg from './PlayingCards'
+import type { Card, GameState } from '@/lib/game-types'
+export type { GameState } from '@/lib/game-types'
 
 type Selection = { revision: number; cards: string[]; stack: string[]; meld: string }
 const cardLabel = (card: Card) => `${card.rank} of ${card.suit}`

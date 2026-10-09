@@ -1,9 +1,9 @@
-import type { GameState } from '../app/components/GameTable'
-import type { Rank, Suit } from '../app/components/PlayingCards'
+import type { GameState, Rank, Suit } from './game-types'
 
 const card = (rank: Rank, suit: Suit) => ({ id: `${rank}-${suit}`, rank, suit })
 type Card = ReturnType<typeof card>
 export type Practice = { game: GameState; deck: Card[]; partnerHand: Card[]; step: number; notice: string }
+const copyPractice = (practice: Practice): Practice => JSON.parse(JSON.stringify(practice))
 const suits: Suit[] = ['clubs', 'diamonds', 'hearts', 'spades']
 const ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 const kings = suits.map(suit => card('K', suit))
@@ -55,7 +55,7 @@ export function playPractice(practice: Practice, action: Record<string, unknown>
         : step === 6 ? action.type === 'drawStack' && action.cardId === '6-diamonds' && sameCards(action.cardIds, [card('5', 'diamonds')]) && sameCards(action.stackCardIds, [card('6', 'diamonds')]) && action.meldId === 'partner-run'
         : action.type === 'playCards' && !action.meldId && sameCards(action.cardIds, step === 1 ? kings : run)
     if (!valid) return null
-    const next = structuredClone(practice)
+    const next = copyPractice(practice)
     const state = next.game
     state.revision++
     state.phase = 'play'
@@ -100,7 +100,7 @@ export function playPractice(practice: Practice, action: Record<string, unknown>
 
 export function playPartner(practice: Practice): Practice {
     if (practice.game.turnUserId !== 'guide' || practice.game.status !== 'playing') return practice
-    const next = structuredClone(practice)
+    const next = copyPractice(practice)
     const state = next.game
     next.partnerHand.push(next.deck.shift()!)
     if (next.step === 4) {

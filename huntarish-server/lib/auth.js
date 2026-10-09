@@ -21,6 +21,7 @@ async function verifyPassword(password, stored) {
 }
 
 function sessionToken(headers) {
+    if (headers.authorization) return /^Bearer ([a-f0-9]{64})$/.exec(headers.authorization)?.[1] || ''
     const cookie = (headers.cookie || '').split(';').map(value => value.trim())
         .find(value => value.startsWith(`${cookieName}=`))
     return cookie ? cookie.slice(cookieName.length + 1) : ''
@@ -53,24 +54,28 @@ function createAuth(app, prisma, origin, onLogout, onRename = async () => {}) {
 
     app.use('/auth', (req, res, next) => {
         res.set('Cache-Control', 'no-store')
-        if (req.method !== 'GET' && req.headers.origin !== origin) {
+        const nativeLogin = ['/native/login', '/native/register'].includes(req.path) && !req.headers.origin && !req.headers.cookie
+        const bearer = !req.headers.origin && /^Bearer [a-f0-9]{64}$/.test(req.headers.authorization || '')
+        if (req.method !== 'GET' && req.headers.origin !== origin && !nativeLogin && !bearer) {
             return res.status(403).json({ error: 'Request origin is not allowed.' })
         }
         next()
     })
 
-    async function issueSession(user, res) {
+    async function issueSession(user, res, native) {
         const token = randomBytes(32).toString('hex')
         await prisma.userSession.create({ data: {
             userId: user.id, tokenHash: digest(token), expiresAt: new Date(Date.now() + sessionDuration),
         } })
-        res.cookie(cookieName, token, { ...cookieOptions, maxAge: sessionDuration })
-        res.json({ user: publicUser(user) })
+        if (!native) res.cookie(cookieName, token, { ...cookieOptions, maxAge: sessionDuration })
+        res.json({ user: publicUser(user), ...(native ? { token } : {}) })
     }
 
     for (const action of ['register', 'login']) {
-        app.post(`/auth/${action}`, async (req, res, next) => {
+        app.post([`/auth/${action}`, `/auth/native/${action}`], async (req, res, next) => {
             try {
+                const native = req.path.startsWith('/auth/native/')
+                if (native && (req.headers.origin || req.headers.cookie)) return res.status(403).json({ error: 'Use browser sign-in.' })
                 const key = req.ip
                 const attempt = attempts.get(key)
                 const limit = attempt && attempt.until > Date.now() ? attempt : { count: 0, until: Date.now() + 900000 }
@@ -93,7 +98,7 @@ function createAuth(app, prisma, origin, onLogout, onRename = async () => {}) {
                     const valid = await verifyPassword(password, user ? user.passwordHash : `${'0'.repeat(32)}:${'0'.repeat(128)}`)
                     if (!user || !valid) return res.status(401).json({ error: 'Email or password is incorrect.' })
                 }
-                await issueSession(user, res)
+                await issueSession(user, res, native)
             } catch (error) {
                 if (error.code === 'P2002') return res.status(409).json({ error: 'That email or display name is already taken. Please choose another.' })
                 next(error)

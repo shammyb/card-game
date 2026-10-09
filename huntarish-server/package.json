@@ -7,8 +7,9 @@
     "start": "node --env-file=.env index.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
-    "test": "node --test test/game.test.cjs test/stats.test.cjs test/forfeit.test.cjs && node --env-file=.env test/accounts.cjs",
-    "test:rules": "node --test test/game.test.cjs"
+    "test": "node --test test/game.test.cjs test/stats.test.cjs test/forfeit.test.cjs test/mobile.test.cjs && node --env-file=.env test/accounts.cjs",
+    "test:rules": "node --test test/game.test.cjs",
+    "test:mobile": "node --test test/mobile.test.cjs"
   },
   "keywords": [],
   "author": "",

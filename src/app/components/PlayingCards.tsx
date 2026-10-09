@@ -1,7 +1,7 @@
 import * as Deck from '@letele/playing-cards'
 
-export type Suit = 'spades' | 'hearts' | 'diamonds' | 'clubs'
-export type Rank = 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K'
+import type { Suit, Rank } from '@/lib/game-types'
+export type { Suit, Rank } from '@/lib/game-types'
 
 const suitMap: Record<Suit, 'C' | 'D' | 'H' | 'S'> = {
     clubs: 'C',

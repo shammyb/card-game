@@ -437,7 +437,10 @@ a:focus-visible { outline: 3px solid #a26b13; outline-offset: 4px; }
   .selectable-card, .hand-card { transition: none; }
 }
 
-@media (hover: none) {
-  .button:not(:disabled):hover, .hand-card:hover, .selectable-card:not(:disabled):hover { transform: none; }
-  .selectable-card.card-selected:not(:disabled) { transform: translateY(-5px); }
+@media (hover: none), (pointer: coarse) {
+  .button, .hand-card, .selectable-card { touch-action: manipulation; }
+  .button:not(:disabled):hover, .hand-card:hover, .selectable-card:not(:disabled):hover,
+  .selectable-card.card-selected, .selectable-card.card-selected:not(:disabled) { transform: none; }
+  .hand-card { filter: none; }
+  .hand-card, .selectable-card { transition: box-shadow .15s; }
 }

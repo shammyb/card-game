@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Huntarish",
+    "slug": "huntarish",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "scheme": "huntarish",
+    "android": { "package": "com.huntarish.app" },
+    "ios": { "bundleIdentifier": "com.huntarish.app", "supportsTablet": true },
+    "plugins": ["expo-secure-store"]
+  }
+}
