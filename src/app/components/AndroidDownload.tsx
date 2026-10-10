@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 const dismissalKey = 'huntarish-android-0.2.0-dismissed'
-const apkUrl = 'https://expo.dev/artifacts/eas/Zv0p7hs7iI_xnMxf170Q4Csm6_avABHjdnvItIb0jf0.apk'
+const apkUrl = 'https://github.com/shammyb/card-game/releases/download/android-v0.2.0/huntarish-0.2.0.apk'
 
 export default function AndroidDownload() {
     const [visible, setVisible] = useState(false)
