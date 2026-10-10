@@ -7,6 +7,7 @@ const { prisma } = require('./lib/prisma')
 const { createAuth, publicUser } = require('./lib/auth')
 const { createMatch, applyAction, playerView, forfeitMatch } = require('./lib/game')
 const { buildStats } = require('./lib/stats')
+const { levels, chooseAction } = require('./lib/computer')
 
 function createGameServer(database = prisma) {
     const app = express()
@@ -41,7 +42,7 @@ function createGameServer(database = prisma) {
                 const member = room.state?.players.find(member => member.id === updatedUser.id)
                 if (member) {
                     member.name = updatedUser.name
-                    await database.game.update({ where: { id: room.game.id }, data: { state: room.state } })
+                    if (!room.computer) await database.game.update({ where: { id: room.game.id }, data: { state: room.state } })
                 }
                 publishRoom(room)
             }
@@ -92,7 +93,7 @@ function createGameServer(database = prisma) {
             const member = room.state?.players.find(item => item.id === player.user.id)
             return {
                 id: player.user.id, name: player.user.name, cards: member?.hand.length || 0,
-                online: online.has(player.user.id),
+                online: online.has(player.user.id) || player.user.id === room.computer?.id,
             }
         })
         for (const player of room.players) {
@@ -102,11 +103,32 @@ function createGameServer(database = prisma) {
             socket.emit('roomPlayers', players)
             if (room.state) {
                 const view = playerView(room.state, player.user.id)
+                if (room.computer) view.computerDifficulty = room.computer.difficulty
                 socket.emit('handDealt', view.hand)
                 socket.emit('gameReady', { stack: view.stack, roundNumber: view.roundNumber })
                 socket.emit('gameState', view)
             } else socket.emit('handDealt', [])
         }
+    }
+
+    function scheduleComputer(room) {
+        if (!room.computer || room.botTimer || !rooms.has(room.id)) return
+        const human = room.players.find(player => player.user.id !== room.computer.id)
+        if (!online.has(human.user.id) || room.state.status !== 'playing' || room.state.players[room.state.turnIndex].id !== room.computer.id) return
+        room.botTimer = setTimeout(() => {
+            room.botTimer = null
+            operations = operations.then(() => {
+                if (!rooms.has(room.id) || !online.has(human.user.id) || room.state.status !== 'playing' || room.state.players[room.state.turnIndex].id !== room.computer.id) return
+                const action = chooseAction(playerView(room.state, room.computer.id), room.computer.difficulty)
+                room.state = applyAction(room.state, room.computer.id, action)
+                publishRoom(room)
+                scheduleComputer(room)
+            }).catch(error => {
+                console.error(error)
+                online.get(human.user.id)?.emit('gameError', 'The computer could not finish its turn. Reconnect to try again, or leave this practice table.')
+            })
+        }, 850)
+        room.botTimer.unref()
     }
 
     async function restoreRoom(userId) {
@@ -178,12 +200,13 @@ function createGameServer(database = prisma) {
         const user = socket.data.user
         if (online.has(user.id)) return socket.disconnect(true)
         online.set(user.id, socket)
+        socket.emit('serverCapabilities', { computerMode: true })
         const expiration = setTimeout(() => socket.disconnect(true), Math.min(2147483647, socket.data.expiresAt - Date.now()))
         expiration.unref()
         operations = operations.then(async () => {
             await restoreRoom(user.id)
             const currentRoom = rooms.get(userRooms.get(user.id))
-            if (currentRoom) publishRoom(currentRoom)
+            if (currentRoom) { publishRoom(currentRoom); scheduleComputer(currentRoom) }
             presence()
             invitations()
         }).catch(error => {
@@ -212,6 +235,20 @@ function createGameServer(database = prisma) {
             throw Object.assign(new Error(message), { clientMessage: message })
         }
 
+        handle('startComputerGame', async ({ difficulty }) => {
+            if (typeof difficulty !== 'string' || !Object.hasOwn(levels, difficulty)) reject('Choose a computer difficulty.')
+            if (userRooms.has(user.id)) reject('Leave your current room first.')
+            const bot = { id: `computer-${randomUUID()}`, name: `${levels[difficulty].name} computer` }
+            const room = { id: randomUUID(), private: true, game: { id: randomUUID() },
+                players: [{ user }, { user: bot }], computer: { id: bot.id, difficulty },
+                state: createMatch([user, bot]) }
+            rooms.set(room.id, room)
+            userRooms.set(user.id, room.id)
+            cancelChallenges(user.id)
+            publishRoom(room)
+            presence()
+        })
+
         handle('joinRoom', async ({ roomId }) => {
             if (typeof roomId !== 'string' || !/^[a-zA-Z0-9-]{4,64}$/.test(roomId)) reject('Enter a room code of 4–64 letters, numbers or hyphens.')
             if (userRooms.has(user.id)) reject('Leave your current room first.')
@@ -226,7 +263,7 @@ function createGameServer(database = prisma) {
         handle('leaveRoom', async () => {
             const room = rooms.get(userRooms.get(user.id))
             if (!room) return
-            if (room.game) {
+            if (room.game && !room.computer) {
                 const updated = forfeitMatch(room.state, user.id)
                 await database.$transaction(async transaction => {
                     if (room.state.status === 'playing') await transaction.round.update({ where: { id: room.roundId }, data: { result: updated.result } })
@@ -236,8 +273,9 @@ function createGameServer(database = prisma) {
             }
             for (const player of room.players) {
                 userRooms.delete(player.user.id)
-                online.get(player.user.id)?.emit('roomClosed', room.state?.forfeitBy ? `${user.name} forfeited. The match and scores have been saved.` : 'The table was closed.')
+                online.get(player.user.id)?.emit('roomClosed', room.computer ? 'Computer practice finished. Your multiplayer record is unchanged.' : room.state?.forfeitBy ? `${user.name} forfeited. The match and scores have been saved.` : 'The table was closed.')
             }
+            clearTimeout(room.botTimer)
             rooms.delete(room.id)
             presence()
         })
@@ -281,6 +319,15 @@ function createGameServer(database = prisma) {
             const room = rooms.get(userRooms.get(user.id))
             if (!room?.state) reject('You are not in an active game.')
             const updated = applyAction(room.state, user.id, action)
+            if (room.computer) {
+                room.state = updated
+                if (action.type === 'nextRound' && updated.status === 'roundOver') {
+                    room.state = applyAction(updated, room.computer.id, { type: 'nextRound', revision: updated.revision })
+                }
+                publishRoom(room)
+                scheduleComputer(room)
+                return
+            }
             const player = room.players.find(member => member.user.id === user.id)
             const nextRound = updated.roundNumber !== room.state.roundNumber
             const roundFinished = room.state.status === 'playing' && updated.status !== 'playing'
@@ -337,7 +384,7 @@ function createGameServer(database = prisma) {
         }
     }, 5000)
     cleanup.unref()
-    server.on('close', () => clearInterval(cleanup))
+    server.on('close', () => { clearInterval(cleanup); for (const room of rooms.values()) clearTimeout(room.botTimer) })
     app.use((error, req, res, next) => {
         console.error(error)
         res.status(error.status === 400 ? 400 : 500).json({ error: 'The request could not be completed. Please try again.' })

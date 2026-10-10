@@ -27,8 +27,8 @@ export default function Table({ game, userId, disabled, onAction }: { game: Game
         <View style={styles.panel}><Text style={styles.heading}>Round {game.roundNumber} · first to 501</Text>{game.players.map(player => <Text key={player.id} style={styles.text}>{player.name}: {player.score} points · {player.cards} cards{player.id === game.turnUserId && game.status === 'playing' ? ' · playing' : ''}</Text>)}<Text accessibilityLiveRegion="polite" style={styles.text}>{game.lastAction}</Text></View>
         {game.status === 'playing' && <View style={styles.panel}>
             <Button title={`Draw from deck · ${game.deckCount} left`} disabled={locked || !drawing || !game.deckCount} onPress={() => act({ type: 'drawDeck' })} />
-            <Text style={styles.heading}>Stack · newest first</Text>
-            <ScrollView horizontal contentContainerStyle={{ gap: 10, padding: 4 }}>{[...game.stack].reverse().map(card => <PlayingCard key={card.id} card={card} disabled={locked || !drawing} selected={chosen.stack.includes(card.id)} onPress={() => toggle('stack', card.id)} />)}</ScrollView>
+            <Text style={styles.heading}>Stack · oldest → newest</Text>
+            <ScrollView horizontal contentContainerStyle={{ gap: 10, padding: 4 }}>{game.stack.map(card => <PlayingCard key={card.id} card={card} disabled={locked || !drawing} selected={chosen.stack.includes(card.id)} onPress={() => toggle('stack', card.id)} />)}</ScrollView>
             <Text style={styles.small}>{oldest >= 0 ? `Take ${game.stack.length - oldest} cards; play ${chosen.stack.length} selected, keep the others.` : 'Select multiple stack cards to play with cards in your hand.'}</Text>
             {drawing && !game.deckCount && <Button title="End round and score" disabled={locked} onPress={() => act({ type: 'endRound' })} />}
         </View>}

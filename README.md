@@ -10,7 +10,7 @@ Use Node 22 (the repository includes an `.nvmrc`). If you use nvm, run `nvm use`
 2. In `huntarish-server`, run `npm install`.
 3. Set `DATABASE_URL` in `huntarish-server/.env` to your PostgreSQL connection string.
 4. In `huntarish-server`, run `npm run db:generate` and `npm run db:migrate`.
-5. Start the backend from `huntarish-server` with `npm start`.
+5. Start the backend from `huntarish-server` with `npm run dev` (automatically restarts when server code changes). `npm start` does not reload code.
 6. In another terminal, start the frontend from the repository root with `npm run dev`.
 7. Open http://localhost:3000.
 
@@ -43,6 +43,18 @@ At the start of a turn with an empty deck, a player may choose a legal stack pic
 The table includes selectable cards, draw/discard controls, per-card ownership labels, current turn, round results, previous round scores and an in-game rules reference. Moves are validated on the server and carry a revision number to prevent repeated or stale actions.
 
 For deployment, use HTTPS and `NODE_ENV=production` to enable Secure cookies. Serve frontend and backend on the same site (for example through a reverse proxy); the session cookie uses SameSite=Lax. Set the exact allowed frontend origin. Multi-instance live game hosting requires shared game state and presence before it is supported.
+
+### Computer practice
+
+The web and native lobbies offer Beginner (very easy), Easy, Medium, Hard and Expert. All moves use the existing server rules, scoring and 501-point match target. Stronger levels examine deeper stack pickups, preserve useful cards and consider follow-up melds. Difficulty is heuristic, not a guarantee of winning strength; even Expert sees only its own hand and public table cards, never the opponent's hand or hidden deck.
+
+Practice uses private in-memory rooms, makes no database game/round/move records, and never changes multiplayer statistics. The computer pauses while its human is offline and resumes on reconnect. Progress expires after 30 minutes offline, a server restart, or leaving the table. Pressing ready automatically readies the computer for the next round. Native users need APK version 0.2.0 or later for these controls.
+
+Run `npm run test:computer` in `huntarish-server` for deterministic rule simulations and socket integration checks (no live database required).
+
+### Android download
+
+Android visitors see a dismissible direct-APK download banner. Its verified Expo artifact URL and displayed version live in `src/app/components/AndroidDownload.tsx`. For future releases, replace the URL and version together and change the dismissal key so previous visitors can see the update. The APK is a preview distributed outside Google Play; updates are manual. The browser game remains available without installing anything.
 
 ## Verification
 

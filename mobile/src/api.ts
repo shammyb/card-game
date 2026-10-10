@@ -1,4 +1,5 @@
 export const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://api.huntarish.com'
+export const webOrigin = process.env.EXPO_PUBLIC_WEB_ORIGIN || 'https://huntarish.com'
 if (!__DEV__ && !apiUrl.startsWith('https://')) throw new Error('Production sign-in requires HTTPS.')
 
 export async function request(path: string, token: string | null, data?: Record<string, string>) {

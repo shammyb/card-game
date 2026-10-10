@@ -2,12 +2,25 @@
   "expo": {
     "name": "Huntarish",
     "slug": "huntarish",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "default",
     "userInterfaceStyle": "light",
     "scheme": "huntarish",
-    "android": { "package": "com.huntarish.app" },
-    "ios": { "bundleIdentifier": "com.huntarish.app", "supportsTablet": true },
-    "plugins": ["expo-secure-store"]
+    "android": {
+      "package": "com.huntarish.app",
+      "versionCode": 2
+    },
+    "ios": {
+      "bundleIdentifier": "com.huntarish.app",
+      "supportsTablet": true
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e408e875-5f2b-4653-8a52-bb9614a6b740"
+      }
+    }
   }
 }

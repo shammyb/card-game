@@ -76,11 +76,19 @@ test('native bearer and browser cookie users play together; browser CSRF protect
         const socket = io(base, { autoConnect: false, transports: ['websocket'], extraHeaders: headers, reconnection: false })
         sockets.push(socket)
         const connected = event(socket, 'connect')
+        const capabilities = event(socket, 'serverCapabilities')
         socket.connect()
         await connected
+        assert.deepEqual(await capabilities, { computerMode: true })
         return socket
     }
-    const appSocket = await connect(bearer)
+    const androidDefault = io(base, { autoConnect: false, transports: ['websocket'], extraHeaders: { ...bearer, Origin: base }, reconnection: false })
+    sockets.push(androidDefault)
+    const originRejected = event(androidDefault, 'connect_error')
+    androidDefault.connect()
+    assert.match((await originRejected).message, /websocket error/)
+    androidDefault.disconnect()
+    const appSocket = await connect({ ...bearer, Origin: origin })
     const webSocket = await connect({ Origin: origin, Cookie: browser.cookie })
     const emit = (socket, name, payload) => socket.timeout(5000).emitWithAck(name, payload)
     const invitation = event(webSocket, 'challenges', value => value.length > 0)
@@ -104,6 +112,31 @@ test('native bearer and browser cookie users play together; browser CSRF protect
     assert.deepEqual(await emit(appSocket, 'leaveRoom', {}), { ok: true })
     assert.equal((await request('stats', null, bearer)).body.overall.losses, 1)
     assert.equal((await request('stats', null, { Cookie: browser.cookie })).body.overall.wins, 1)
+    const statsBeforePractice = (await request('stats', null, bearer)).body
+    assert.match((await emit(appSocket, 'startComputerGame', { difficulty: 'constructor' })).error, /difficulty/)
+    const practiceState = event(appSocket, 'gameState')
+    const practiceRoom = event(appSocket, 'roomJoined')
+    assert.deepEqual(await emit(appSocket, 'startComputerGame', { difficulty: 'expert' }), { ok: true })
+    const practice = await practiceState
+    const room = await practiceRoom
+    assert.equal(practice.computerDifficulty, 'expert')
+    assert.equal(practice.hand.length, 11)
+    assert.equal(practice.players[1].hand, undefined)
+    assert.match((await emit(appSocket, 'startComputerGame', { difficulty: 'easy' })).error, /Leave/)
+    assert.ok((await emit(webSocket, 'joinRoom', { roomId: typeof room === 'string' ? room : room.roomId })).error)
+    const practiceDraw = event(appSocket, 'gameState', value => value.revision > practice.revision)
+    assert.deepEqual(await emit(appSocket, 'gameAction', { type: 'drawDeck', revision: practice.revision }), { ok: true })
+    const drawn = await practiceDraw
+    const computerPlayed = event(appSocket, 'gameState', value => value.revision >= drawn.revision + 2)
+    assert.deepEqual(await emit(appSocket, 'gameAction', { type: 'discard', revision: drawn.revision, cardId: drawn.hand[0].id }), { ok: true })
+    const computerTurn = await computerPlayed
+    assert.ok(computerTurn.revision > drawn.revision + 1)
+    appSocket.disconnect()
+    const resumedState = event(appSocket, 'gameState')
+    appSocket.connect()
+    assert.equal((await resumedState).computerDifficulty, 'expert')
+    assert.deepEqual(await emit(appSocket, 'leaveRoom', {}), { ok: true })
+    assert.deepEqual((await request('stats', null, bearer)).body, statsBeforePractice)
     const disconnected = event(appSocket, 'disconnect')
     assert.equal((await request('logout', {}, bearer)).status, 200)
     await disconnected

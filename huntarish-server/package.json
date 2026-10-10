@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=.env index.js",
+    "dev": "node --watch --env-file=.env index.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
-    "test": "node --test test/game.test.cjs test/stats.test.cjs test/forfeit.test.cjs test/mobile.test.cjs && node --env-file=.env test/accounts.cjs",
-    "test:rules": "node --test test/game.test.cjs",
+    "test": "node --test test/game.test.cjs test/computer.test.cjs test/stats.test.cjs test/forfeit.test.cjs test/mobile.test.cjs && node --env-file=.env test/accounts.cjs",
+    "test:rules": "node --test test/game.test.cjs test/computer.test.cjs",
+    "test:computer": "node --test test/computer.test.cjs test/mobile.test.cjs",
     "test:mobile": "node --test test/mobile.test.cjs"
   },
   "keywords": [],

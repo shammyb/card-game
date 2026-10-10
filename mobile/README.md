@@ -11,6 +11,8 @@ Android-first Expo / React Native client; iOS-compatible source. This is a nativ
 
 Default server: `https://api.huntarish.com`. Use different accounts for the app and browser: the server allows only one connected device per account.
 
+The socket sends `EXPO_PUBLIC_WEB_ORIGIN` (default `https://huntarish.com`) explicitly because Android otherwise supplies the API origin, which the server rejects. For local testing set this to the server's `FRONTEND_ORIGIN` (usually `http://localhost:3000`). This is a public origin, not a credential; socket access still requires a valid session. Native HTTP sign-in must not send this header.
+
 ## Build and check
 
 - `npm run typecheck`
@@ -19,6 +21,8 @@ Default server: `https://api.huntarish.com`. Use different accounts for the app 
 - `npx eas-cli build --platform ios --profile production` requires Apple signing setup. Store submission is a separate step.
 
 ## First version
+
+Version 0.2.0 adds computer practice with five difficulties, oldest-first stack display, and availability/loading feedback. Install the new APK over the existing app to update; it uses the same package and signing key. Preview builds use local versioning: increment `expo.android.versionCode` for each distributed APK and keep the displayed app/package versions in sync.
 
 Includes account registration/login/logout, secure persisted sessions, reconnect, online challenges, shared room codes, all existing game actions (multi-card stack pickup, meld extensions, discards and subsequent rounds), forfeit confirmation, profile name editing and overall/opponent records, plus the same guided practice sequence. Controls have stationary touch targets and adapt to folded/unfolded layouts. Hand sorting supports dealt/rank/suit order.
 

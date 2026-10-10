@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store'
 import { io, Socket } from 'socket.io-client'
 import { createPractice, playPartner, playPractice, tutorialSteps, Practice } from '../src/lib/tutorial'
 import type { GameState } from '../src/lib/game-types'
-import { apiUrl, request } from './src/api'
+import { apiUrl, webOrigin, request } from './src/api'
 import { Button, Field, styles } from './src/ui'
 import Table from './src/Table'
 
@@ -34,6 +34,9 @@ function Huntarish() {
     const [roomInput, setRoomInput] = useState('')
     const [room, setRoom] = useState('')
     const [game, setGame] = useState<GameState | null>(null)
+    const [difficulty, setDifficulty] = useState('medium')
+    const [soloAvailable, setSoloAvailable] = useState(false)
+    const [startingSolo, setStartingSolo] = useState(false)
     const [screen, setScreen] = useState<'lobby' | 'profile' | 'tutorial'>('lobby')
     const [practice, setPractice] = useState<Practice>(createPractice)
     const [stats, setStats] = useState<StatsResponse | null>(null)
@@ -67,11 +70,12 @@ function Huntarish() {
 
     useEffect(() => {
         if (!user?.id || !token) return
-        const connection = io(apiUrl, { transports: ['websocket'], extraHeaders: { Authorization: `Bearer ${token}` } })
+        const connection = io(apiUrl, { transports: ['websocket'], extraHeaders: { Authorization: `Bearer ${token}`, Origin: webOrigin } })
         socket.current = connection
         const clearRoom = () => { setRoom(''); setGame(null) }
-        connection.on('connect', () => { setConnected(true); setError(''); clearRoom() })
-        connection.on('disconnect', () => { setConnected(false); setOnline([]); setChallenges([]); setPending(false); busy.current = false })
+        connection.on('connect', () => { setConnected(true); setSoloAvailable(false); setError(''); clearRoom() })
+        connection.on('disconnect', () => { setConnected(false); setSoloAvailable(false); setOnline([]); setChallenges([]); setPending(false); busy.current = false })
+        connection.on('serverCapabilities', (features: { computerMode?: boolean }) => setSoloAvailable(features?.computerMode === true))
         connection.on('connect_error', failure => { setConnected(false); setError(failure.message) })
         connection.on('onlineUsers', setOnline)
         connection.on('challenges', setChallenges)
@@ -93,11 +97,13 @@ function Huntarish() {
     function send(event: string, payload: Record<string, unknown>) {
         void run(async () => {
             if (!socket.current?.connected) throw new Error('Reconnect to the game server first.')
+            if (event === 'startComputerGame' && !soloAvailable) throw new Error('Computer mode is not available on this server yet.')
+            setStartingSolo(event === 'startComputerGame')
             await new Promise<void>((resolve, reject) => socket.current!.timeout(10000).emit(event, payload, (failure: Error | null, result?: { error?: string }) => {
                 if (failure) reject(new Error('No response. Reconnect to refresh before trying again.'))
                 else if (result?.error) reject(new Error(result.error))
                 else resolve()
-            }))
+            })).finally(() => setStartingSolo(false))
         })
     }
 
@@ -159,9 +165,11 @@ function Huntarish() {
                         {!connected && <Button title="Reconnect" onPress={() => socket.current?.connect()} />}
                         {room ? <>
                             <Text selectable style={styles.small}>Room: {room}</Text>
+                            {game?.computerDifficulty && <Text style={styles.text}>Computer practice · {game.computerDifficulty}. No multiplayer stats. Leaving or a server restart clears this game.</Text>}
                             {game ? <Table game={game} userId={user.id} disabled={disabled} onAction={action => send('gameAction', action)} /> : <Text style={styles.text}>Waiting for another player. Share this room code with an app or browser player.</Text>}
-                            <Button title={game && game.status !== 'matchOver' ? 'Leave and forfeit' : 'Leave room'} disabled={disabled} onPress={() => game && game.status !== 'matchOver' ? Alert.alert('Forfeit this match?', 'Your opponent wins. The current round and all scores count toward your stats.', [{ text: 'Stay', style: 'cancel' }, { text: 'Forfeit', style: 'destructive', onPress: () => send('leaveRoom', {}) }]) : send('leaveRoom', {})} />
+                            <Button title={game?.computerDifficulty ? 'Leave practice' : game && game.status !== 'matchOver' ? 'Leave and forfeit' : 'Leave room'} disabled={disabled} onPress={() => game && game.status !== 'matchOver' ? Alert.alert(game.computerDifficulty ? 'Leave computer practice?' : 'Forfeit this match?', game.computerDifficulty ? 'Practice progress will be lost. Your multiplayer record is unchanged.' : 'Your opponent wins. The current round and all scores count toward your stats.', [{ text: 'Stay', style: 'cancel' }, { text: game.computerDifficulty ? 'Leave practice' : 'Forfeit', style: 'destructive', onPress: () => send('leaveRoom', {}) }]) : send('leaveRoom', {})} />
                         </> : <>
+                            <View style={styles.panel}><Text style={styles.heading}>Play the computer</Text><Text style={styles.text}>Same rules. No multiplayer stats. Five levels, from a forgiving beginner to an expert that plans ahead.</Text><View style={styles.row}>{['beginner', 'easy', 'medium', 'hard', 'expert'].map(level => <Button key={level} title={level === 'beginner' ? 'Beginner · very easy' : level.charAt(0).toUpperCase() + level.slice(1)} selected={difficulty === level} onPress={() => setDifficulty(level)} />)}</View>{connected && !soloAvailable && <Text style={styles.small}>Computer mode is not available on this server yet.</Text>}<Button title={startingSolo ? 'Starting your table…' : 'Play solo'} disabled={disabled || !soloAvailable} onPress={() => send('startComputerGame', { difficulty })} /></View>
                             <View style={styles.panel}><Text style={styles.heading}>Play with a friend</Text><Field label="Room code · 4–64 letters, numbers or hyphens" value={roomInput} onChangeText={setRoomInput} autoCapitalize="none" autoCorrect={false} maxLength={64} /><Button title="Create or join room" disabled={disabled || !/^[a-zA-Z0-9-]{4,64}$/.test(roomInput.trim())} onPress={() => send('joinRoom', { roomId: roomInput.trim() })} /></View>
                             <View style={styles.panel}><Text style={styles.heading}>Challenges</Text>{challenges.map(challenge => <View key={challenge.id} style={{ gap: 8 }}><Text style={styles.text}>{challenge.from.id === user.id ? `Waiting for ${challenge.to.name}` : `${challenge.from.name} challenges you`}</Text>{challenge.to.id === user.id ? <View style={styles.row}><Button title="Accept" disabled={disabled} onPress={() => send('respondChallenge', { challengeId: challenge.id, accept: true })} /><Button title="Decline" disabled={disabled} onPress={() => send('respondChallenge', { challengeId: challenge.id, accept: false })} /></View> : <Button title="Cancel challenge" disabled={disabled} onPress={() => send('cancelChallenge', { challengeId: challenge.id })} />}</View>)}
                                 {!online.some(player => player.id !== user.id) && <Text style={styles.text}>No other players online yet. Ask a friend to sign in on the website or app.</Text>}

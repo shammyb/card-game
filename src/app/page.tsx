@@ -43,6 +43,9 @@ export default function Home() {
     const [roomId, setRoomId] = useState('')
     const [players, setPlayers] = useState<Player[]>([])
     const [gameState, setGameState] = useState<GameState | null>(null)
+    const [computerDifficulty, setComputerDifficulty] = useState('medium')
+    const [soloAvailable, setSoloAvailable] = useState(false)
+    const [startingSolo, setStartingSolo] = useState(false)
 
     useEffect(() => {
         let active = true
@@ -64,16 +67,19 @@ export default function Home() {
             setGameState(null)
         }
         connection.on('connect', () => {
+            setSoloAvailable(false)
             setConnected(true)
             setError('')
             resetRoom()
         })
         connection.on('disconnect', () => {
+            setSoloAvailable(false)
             setConnected(false)
             setOnlineUsers([])
             setChallenges([])
         })
         connection.on('connect_error', failure => setError(failure.message))
+        connection.on('serverCapabilities', (features: { computerMode?: boolean }) => setSoloAvailable(features?.computerMode === true))
         connection.on('onlineUsers', setOnlineUsers)
         connection.on('challenges', setChallenges)
         connection.on('roomJoined', ({ roomId }: { roomId: string }) => {
@@ -123,12 +129,15 @@ export default function Home() {
     }
 
     function send(event: string, payload: Record<string, unknown>) {
-        if (event === 'leaveRoom' && gameState && gameState.status !== 'matchOver' && !window.confirm('Leave and forfeit this match? Your opponent wins, and the current round and all scores count toward your stats.')) return
+        if (event === 'leaveRoom' && gameState && gameState.status !== 'matchOver' && !window.confirm(gameState.computerDifficulty ? 'Leave this computer game? Practice progress will be lost, but your multiplayer record is unchanged.' : 'Leave and forfeit this match? Your opponent wins, and the current round and all scores count toward your stats.')) return
         if (!socket.current?.connected) return setError('Connect to the game server first.')
+        if (event === 'startComputerGame' && !soloAvailable) return setError('Computer mode is not available on this server yet.')
+        setStartingSolo(event === 'startComputerGame')
         setPending(true)
         setError('')
         setNotice('')
         socket.current.timeout(10000).emit(event, payload, (failure: Error | null, result: { error?: string }) => {
+            setStartingSolo(false)
             setPending(false)
             if (failure) setError('The server did not respond. Reconnect to refresh your game.')
             else if (result?.error) setError(result.error)
@@ -196,6 +205,14 @@ export default function Home() {
                             </section>
                             {!roomId ? (
                                 <div className="lobby-grid">
+                                    <section className="surface computer-panel">
+                                        <h2>Play the computer</h2>
+                                        <p className="section-copy">Your own table, whenever you want. Same rules and 501-point matches. Practice does not affect your multiplayer record.</p>
+                                        <label>Difficulty<select value={computerDifficulty} onChange={event => setComputerDifficulty(event.target.value)}>{[['beginner', 'Beginner · very easy'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard'], ['expert', 'Expert']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+                                        <p className="section-copy">{({ beginner: 'A forgiving opponent that often misses opportunities.', easy: 'Simple plays and shallow stack pickups.', medium: 'Reliable melds and more careful discards.', hard: 'Plans follow-up melds and searches deeper in the stack.', expert: 'Searches the whole stack and protects useful cards. Never sees your hand or the deck.' } as Record<string, string>)[computerDifficulty]}</p>
+                                        {connected && !soloAvailable && <p role="status" className="section-copy">Computer mode is not available on this server yet. For local testing, restart the game server with the latest code.</p>}
+                                        <button className="button button-primary" disabled={disabled || !soloAvailable} aria-busy={startingSolo} onClick={() => send('startComputerGame', { difficulty: computerDifficulty })}>{startingSolo ? 'Starting your table…' : 'Play solo ↗'}</button>
+                                    </section>
                                     <section className="surface players-panel">
                                         <div className="section-heading"><h2>Find your opponent</h2><span className="count-pill">{otherPlayers.length} online</span></div>
                                         <p className="section-copy">A friendly rivalry is only a challenge away.</p>
@@ -232,6 +249,7 @@ export default function Home() {
                                 </div>
                             ) : (
                                 <section className="surface game-panel">
+                                    {gameState?.computerDifficulty && <p className="message message-notice">Computer practice · {gameState.computerDifficulty}. No multiplayer stats. Reconnect to resume while this server is running; leaving or a server restart clears this game.</p>}
                                     <div className="room-toolbar"><div><span className="eyebrow">ROOM CODE</span><p className="room-code">{roomId}</p></div><button disabled={disabled} className="text-button" onClick={() => send('leaveRoom', {})}>Leave table ↗</button></div>
                                     <ul className="table-players">{players.map(player => (
                                         <li key={player.id}><span className="avatar" aria-hidden="true">{player.name.slice(0, 1).toUpperCase()}</span><div><strong>{player.id === user.id ? 'You' : player.name}</strong><p>{player.cards} cards{!player.online ? ' · Offline' : ''}</p></div><span className={player.online ? 'player-dot is-online' : 'player-dot'} /></li>

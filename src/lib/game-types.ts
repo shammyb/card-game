@@ -4,6 +4,7 @@ export type Card = { id: string; rank: Rank; suit: Suit }
 type RoundScore = { userId: string; name: string; tablePoints: number; handPoints: number; delta: number; total: number }
 type RoundResult = { roundNumber: number; reason: string; scores: RoundScore[] }
 export type GameState = {
+    computerDifficulty?: string
     revision: number
     roundNumber: number
     status: 'playing' | 'roundOver' | 'matchOver'

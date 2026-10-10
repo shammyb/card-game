@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+.computer-panel { grid-column: 1 / -1; display: grid; gap: 16px; }
+.computer-panel label { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.computer-panel select { min-height: 44px; padding: 10px; border: 1px solid #aebfb0; border-radius: 8px; background: #fffaf0; color: #173f3a; font-size: 16px; }
+.computer-panel .button { justify-self: start; }
+
 :root {
   --background: #e4eeE5;
   --foreground: #173f3a;

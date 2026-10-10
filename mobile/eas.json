@@ -1,6 +1,16 @@
 {
+  "cli": { "appVersionSource": "local" },
   "build": {
-    "preview": { "distribution": "internal", "android": { "buildType": "apk" } },
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "node": "22.22.3",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.huntarish.com",
+        "EXPO_PUBLIC_WEB_ORIGIN": "https://huntarish.com"
+      },
+      "android": { "buildType": "apk" }
+    },
     "production": {}
   }
 }
