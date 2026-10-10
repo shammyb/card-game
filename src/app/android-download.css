@@ -1,0 +1,5 @@
+.android-download { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px; padding: 16px max(16px, 5.5vw); background: #fff5da; color: #173f3a; border-bottom: 1px solid #d8c69b; }
+.android-download > div { flex: 1 1 240px; }
+.android-download p { font-size: 13px; line-height: 1.6; }
+.android-download summary { cursor: pointer; font-size: 13px; padding: 8px 0; }
+.android-download .text-button { min-height: 44px; }
