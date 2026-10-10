@@ -3,3 +3,11 @@
 .android-download p { font-size: 13px; line-height: 1.6; }
 .android-download summary { cursor: pointer; font-size: 13px; padding: 8px 0; }
 .android-download .text-button { min-height: 44px; }
+.android-download-collapsed { flex-wrap: nowrap; padding-top: 10px; padding-bottom: 10px; }
+.android-download-collapsed strong { margin-right: auto; }
+@media (max-width: 720px) {
+    .android-download { padding: 14px max(14px, env(safe-area-inset-right)) 14px max(14px, env(safe-area-inset-left)); }
+    .android-download-collapsed { gap: 10px; }
+    .android-download-collapsed strong { font-size: 13px; }
+    .android-download-collapsed .button { padding: 10px 12px; }
+}
