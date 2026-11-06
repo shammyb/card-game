@@ -42,6 +42,8 @@ At the start of a turn with an empty deck, a player may choose a legal stack pic
 
 The table includes selectable cards, draw/discard controls, per-card ownership labels, current turn, round results, previous round scores and an in-game rules reference. Moves are validated on the server and carry a revision number to prevent repeated or stale actions.
 
+The opponent’s hidden hand, deck and stack stay together in a pinned panel. Use the right-edge **Table** tab to slide sets and runs into view without scrolling through them. Select cards first, then drag one selected card to play the group; drop a deck card into your hand to draw, or a hand card onto the stack to discard. Holding a dragged card over the Table tab opens the drawer so you can drop onto a specific group. Tap controls remain available. On touch screens, swipe horizontally to browse cards and drag vertically to start moving a card. These controls also exist in the native Android source; distributing them requires a new APK build.
+
 For deployment, use HTTPS and `NODE_ENV=production` to enable Secure cookies. Serve frontend and backend on the same site (for example through a reverse proxy); the session cookie uses SameSite=Lax. Set the exact allowed frontend origin. Multi-instance live game hosting requires shared game state and presence before it is supported.
 
 ### Computer practice

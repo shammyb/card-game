@@ -131,6 +131,28 @@ function Huntarish() {
 
     const disabled = pending || !connected
     const record = stats?.opponents.find(player => player.id === opponent) || stats?.overall
+    const activeGame = screen === 'tutorial' ? practice.game : screen === 'lobby' && user && room ? game : null
+    if (!loading && activeGame) return <SafeAreaView style={styles.screen}>
+        <View style={{ padding: 8, gap: 6 }}>
+            <View style={styles.row}>
+                <Text style={styles.heading}>♠ Huntarish</Text>
+                <Button title={screen === 'tutorial' ? 'Back' : 'Leave'} disabled={screen !== 'tutorial' && disabled} onPress={() => {
+                    if (screen === 'tutorial') { setScreen('lobby'); setError(''); return }
+                    if (activeGame.status === 'matchOver') { send('leaveRoom', {}); return }
+                    Alert.alert(activeGame.computerDifficulty ? 'Leave computer practice?' : 'Forfeit this match?', activeGame.computerDifficulty ? 'Practice progress will be lost. Your multiplayer record is unchanged.' : 'Your opponent wins. The current round and all scores count toward your stats.', [{ text: 'Stay', style: 'cancel' }, { text: 'Leave', style: 'destructive', onPress: () => send('leaveRoom', {}) }])
+                }} />
+                {screen === 'tutorial' && <Button title="Restart" onPress={() => { setPractice(createPractice()); setError('') }} />}
+            </View>
+            {screen === 'tutorial' && <Text style={styles.small}>{practice.step < 8 ? `${practice.step + 1}/8 · ${tutorialSteps[practice.step].instruction}` : 'Practice complete! Your table cards score positively; hand cards are deducted.'}</Text>}
+            {error ? <Text accessibilityRole="alert" style={styles.small}>{error}</Text> : null}
+            {!connected && screen !== 'tutorial' && <Button title="Offline · Reconnect" onPress={() => socket.current?.connect()} />}
+        </View>
+        <Table game={activeGame} userId={screen === 'tutorial' ? 'learner' : user!.id} disabled={screen !== 'tutorial' && disabled} onAction={action => {
+            if (screen !== 'tutorial') { send('gameAction', action); return }
+            const next = playPractice(practice, action)
+            if (next) { setPractice(next); setError('') } else setError('Follow the practice instructions for this step.')
+        }} />
+    </SafeAreaView>
     return <SafeAreaView style={styles.screen}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>

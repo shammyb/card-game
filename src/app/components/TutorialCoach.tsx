@@ -14,11 +14,12 @@ export type TutorialGuide = {
     notice: string
 }
 
-export default function TutorialCoach({ guide, selectedHand, selectedStack, selectedMeld, arranging, root }: {
+export default function TutorialCoach({ guide, selectedHand, selectedStack, selectedMeld, arranging, root, tableVisible }: {
     guide: TutorialGuide
     selectedHand: string[]
     selectedStack: string[]
     selectedMeld: string
+    tableVisible: boolean
     arranging: boolean
     root: RefObject<HTMLDivElement | null>
 }) {
@@ -74,7 +75,7 @@ export default function TutorialCoach({ guide, selectedHand, selectedStack, sele
             window.clearTimeout(timer)
             active.forEach(element => { element.classList.remove('tutorial-glow'); element.removeAttribute('aria-describedby') })
         }
-    }, [targetKey, guide.step, motion, root])
+    }, [targetKey, guide.step, motion, root, tableVisible])
 
     return <aside className="tutorial-coach" id="tutorial-coach" aria-label="Tutorial guide">
         <span className="coach-avatar" aria-hidden="true">♠</span>

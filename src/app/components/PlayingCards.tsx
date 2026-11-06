@@ -38,3 +38,13 @@ export default function CardSvg({ suit, rank }: { suit: Suit; rank: Rank }) {
         </div>
     )
 }
+
+export function CardBack({ variant = 'B1' }: { variant?: 'B1' | 'B2' }) {
+    const Back = Deck[variant]
+
+    return (
+        <div className="aspect-[5/7] w-full overflow-hidden rounded shadow">
+            <Back style={{ display: 'block', width: '100%', height: '100%' }} />
+        </div>
+    )
+}

@@ -22,7 +22,7 @@ export default function useCardMotion(root: RefObject<HTMLDivElement | null>, re
                 const destination = position(element)
                 const old = previous.current.get(element.dataset.cardId!)
                 if (old?.zone === destination.zone) return
-                const sourceElement = board.querySelector<HTMLElement>(element.dataset.cardOwner === 'guide' ? '[data-guide="partner"]' : '[data-guide="draw"]')
+                const sourceElement = board.querySelector<HTMLElement>(element.dataset.cardOwner === 'guide' ? '.opponent-hand' : '[data-guide="draw"]')
                 const source = old || (sourceElement ? position(sourceElement) : destination)
                 if (!destination.width || !source.width) return
                 const clone = element.cloneNode(true) as HTMLElement
